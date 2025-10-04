@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: aiagent1
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.6
+      - key: PYTHONUNBUFFERED
+        value: true
+      - key: GUNICORN_CMD_ARGS
+        value: "--workers=4 --worker-class=gevent --timeout 120"
+      - key: PYTHONPATH
+        value: "/opt/render/project/src:/opt/render/project/src/ai_agent:/opt/render/project"

@@ -3,9 +3,14 @@ Flask==2.3.3
 Flask-Cors==4.0.0
 Werkzeug==2.3.7
 python-dotenv==1.0.0
+gunicorn==21.2.0
+gevent==23.7.0
 
 # AI & Machine Learning
 google-generativeai==0.3.2
+google-api-python-client==2.104.0
+google-auth-httplib2==0.1.1
+google-auth-oauthlib==1.1.0
 
 # Data Processing & Analysis
 pandas==2.1.1
@@ -18,6 +23,10 @@ dash-bootstrap-components==1.5.0
 
 # Web & API
 requests==2.31.0
+
+# Required for deployment
+setuptools==68.2.2
+wheel==0.41.3
 python-dateutil==2.8.2
 
 # Alerting & Notifications

@@ -3,8 +3,8 @@ Flask==2.3.3
 Flask-Cors==4.0.0
 Werkzeug==2.3.7
 python-dotenv==1.0.0
-gunicorn==21.2.0
-gevent==23.7.0
+gunicorn==20.1.0
+gevent==22.10.2  # Pinned to a version known to work with Python 3.9
 
 # AI & Machine Learning
 google-generativeai==0.3.2
@@ -13,30 +13,25 @@ google-auth-httplib2==0.1.1
 google-auth-oauthlib==1.1.0
 
 # Data Processing & Analysis
-pandas==2.1.1
-numpy==1.26.0
+pandas==1.5.3  # Pinned to a version known to work with Python 3.9
+numpy==1.24.3  # Pinned to a version known to work with Python 3.9
 
 # Dashboard & Visualization
-plotly==5.17.0
-dash==2.13.0
-dash-bootstrap-components==1.5.0
+plotly==5.13.1  # Pinned to a version known to work with Python 3.9
+dash==2.9.3  # Pinned to a version known to work with Python 3.9
+dash-bootstrap-components==1.4.1  # Pinned to a version known to work with Python 3.9
 
 # Web & API
 requests==2.31.0
 
 # Required for deployment
-setuptools==68.2.2
-wheel==0.41.3
+setuptools==67.8.0
+wheel==0.40.0
 python-dateutil==2.8.2
 
 # Alerting & Notifications
 yagmail==0.15.293
 slack-sdk==3.21.3
-
-# Development & Testing
-pytest==7.4.2
-pytest-cov==4.1.0
-black==23.9.1
 flake8==6.1.0
 
 # Utilities

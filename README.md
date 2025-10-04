@@ -1,4 +1,11 @@
-# Sentiment Analysis Web Application with Dashboard & Alert System
+# AI-Powered Sentiment Analysis Platform
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/Flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
+[![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/yourusername/AiAgent/network/dependencies)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A comprehensive AI-powered sentiment analysis platform with real-time dashboard, alerting system, and batch processing capabilities. Built with Flask, Plotly Dash, and Google's Gemini AI for advanced text analysis.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Flask](https://img.shields.io/badge/Flask-2.0.1-green.svg)](https://flask.palletsprojects.com/)
@@ -7,7 +14,38 @@
 
 A comprehensive web application for real-time sentiment analysis with an interactive dashboard and integrated alert system. This tool helps businesses and individuals monitor, analyze, and visualize sentiment in textual data.
 
-## 🌟 Key Features
+## 🚀 Key Features
+
+### Core Features
+- **Real-time Sentiment Analysis**: Instant analysis of text with detailed sentiment scoring
+- **Batch Processing**: Analyze multiple texts simultaneously for efficient processing
+- **AI-Powered Insights**: Leverages Google's Gemini AI for advanced text understanding
+- **Interactive Dashboard**: Real-time visualization of sentiment trends and analytics
+- **Alert System**: Configurable alerts for critical sentiment patterns
+- **Feedback Management**: Store and manage analyzed feedback with timestamps
+- **API-First Design**: RESTful endpoints for easy integration with other systems
+
+### Technical Highlights
+- **Built with Flask**: Lightweight and scalable Python web framework
+- **Interactive Visualizations**: Powered by Plotly Dash for beautiful, responsive charts
+- **Modular Architecture**: Clean separation of concerns with dedicated modules
+- **Data Persistence**: JSON-based storage with feedback management
+- **Environment Configuration**: Easy setup with environment variables
+- **Comprehensive Logging**: Built-in logging for monitoring and debugging
+
+### Core Functionality
+- **Real-time Sentiment Analysis**: Instant analysis of text with detailed sentiment scoring
+- **Batch Processing**: Analyze multiple texts simultaneously for efficient processing
+- **AI-Powered Insights**: Leverages Google's Gemini AI for advanced text understanding
+- **Interactive Dashboard**: Real-time visualization of sentiment trends and analytics
+- **Alert System**: Configurable alerts for critical sentiment patterns
+
+### Technical Highlights
+- **RESTful API**: Well-documented endpoints for easy integration
+- **Modular Architecture**: Clean separation of concerns with dedicated modules
+- **Data Persistence**: JSON-based storage with feedback management
+- **Responsive Design**: Works seamlessly across devices and screen sizes
+- **Asynchronous Processing**: Non-blocking operations for optimal performance
 
 ### Text Analysis
 - **Single Text Analysis**: Get immediate sentiment analysis for individual text inputs

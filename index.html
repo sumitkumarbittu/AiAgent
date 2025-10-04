@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    
+    <style>
+        body {
+            padding: 2rem 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1000px;
+        }
+        .sentiment-positive {
+            color: #198754;
+            font-weight: bold;
+        }
+        .sentiment-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .sentiment-neutral {
+            color: #6c757d;
+            font-weight: bold;
+        }
+        .result-card {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        .error-message {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        /* Gemini Alert Box Styles */
+        #geminiAlertBox {
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 1.5rem 0;
+        }
+        
+        #geminiAlertBox .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        
+        #geminiAlertBox .alert-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+        
+        #geminiAlertBox .alert-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        #geminiAlertBox .card-footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 0.85rem;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="mb-5 text-center">
+            <h1 class="display-4">Sentiment Analysis</h1>
+            <p class="lead">Analyze text sentiment using AI</p>
+        </header>
+
+        <div class="card shadow">
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-4" id="analysisTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab">Single Text</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch" type="button" role="tab">Batch Analysis</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="analysisTabsContent">
+                    <!-- Single Text Tab -->
+                    <div class="tab-pane fade show active" id="single" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="singleText" class="form-label">Enter your text:</label>
+                            <textarea class="form-control" id="singleText" rows="5" required></textarea>
+                        </div>
+                        <button id="analyzeSingleBtn" class="btn btn-primary">Analyze Sentiment</button>
+                        
+                        <div id="singleResult" class="card mt-4 result-card">
+                            <div class="card-body">
+                                <h3 class="card-title">Analysis Result</h3>
+                                <div class="mb-3">
+                                    <h5>Your Text:</h5>
+                                    <div class="card bg-light p-3">
+                                        <p id="resultText" class="mb-0"></p>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <h5>Sentiment:</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p class="h4 mb-0" id="sentimentResult"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button id="newAnalysisBtn" class="btn btn-outline-primary">Analyze Another Text</button>
+                                <button id="sendSingleAlertBtn" onclick="sendSingleAlert()" disabled>Send Alert</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Batch Analysis Tab -->
+                    <div class="tab-pane fade" id="batch" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="batchTexts" class="form-label">Enter multiple texts (one per line):</label>
+                            <textarea class="form-control" id="batchTexts" rows="10" required></textarea>
+                            <div class="form-text">Enter each text on a new line</div>
+                        </div>
+                        <button id="analyzeBatchBtn" class="btn btn-primary">Analyze All</button>
+                        <button id="sendBatchAlertBtn" onclick="sendBatchAlert()" disabled>Send Alerts</button>
+                        
+                        <div id="batchResult" class="mt-4 result-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h3 class="card-title mb-0">Batch Analysis Results</h3>
+                                        <span id="resultCount" class="badge bg-primary"></span>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Text</th>
+                                                    <th>Sentiment</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="resultsTableBody">
+                                                <!-- Results will be inserted here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                        <button id="newBatchBtn" class="btn btn-outline-primary me-md-2">Analyze More</button>
+                                        <button id="backToSingleBtn" class="btn btn-primary">Back to Single</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons my-3">
+            <div class="d-flex flex-row gap-3">
+                <button id="gemini-alert-btn" class="btn btn-warning btn-sm">
+                    <i class="bi bi-stars me-1"></i> Generate Gemini Alert
+                </button>
+                <button id="ai-suggestions-btn" class="btn btn-info text-white btn-sm">
+                    <i class="bi bi-robot me-1"></i> Get AI Suggestion
+                </button>
+            </div>
+        </div>
+        
+        <!-- Gemini Alert Box -->
+        <div id="geminiAlertBox" class="card shadow-lg mt-3" style="display: none;">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-stars me-2"></i>Gemini Alert
+                </h5>
+                <button type="button" class="btn-close" onclick="document.getElementById('geminiAlertBox').style.display='none'"></button>
+            </div>
+            <div class="card-body">
+                <div id="geminiAlertContent" class="alert-content">
+                    <!-- Content will be inserted here by JavaScript -->
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <small class="text-muted">Powered by Google Gemini</small>
+            </div>
+        </div>
+        
+        <!-- AI Suggestions Container -->
+        <div id="aiSuggestionsContainer" class="card shadow mt-3" style="display: none;">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-robot me-2"></i>AI Suggestion</h5>
+                <button type="button" class="btn-close" onclick="document.getElementById('aiSuggestionsContainer').style.display='none'"></button>
+            </div>
+            <div id="aiSuggestionsContent" class="card-body">
+                <!-- Suggestions will be loaded here -->
+            </div>
+            <div class="card-footer bg-light">
+                <small class="text-muted">AI-generated response suggestions</small>
+            </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing text, please wait...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="alert alert-danger error-message mt-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span id="errorText"></span>
+        </div>
+
+
+          <section class="hero-section">
+            <h1 class="animate__animated animate__fadeInDown">📊 AI Sentiment Dashboard</h1>
+            <p class="animate__animated animate__fadeInUp">Track insights, visualize feedback, and monitor sentiment trends</p>
+            <a href="/dashboard/" class="btn btn-launch animate__animated animate__zoomIn mt-3">🚀 Launch Dashboard</a>
+          </section>
+
+        <footer class="mt-5 text-center text-muted">
+            <p>Sentiment Analysis Tool &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const analyzeSingleBtn = document.getElementById('analyzeSingleBtn');
+            const analyzeBatchBtn = document.getElementById('analyzeBatchBtn');
+            const singleResult = document.getElementById('singleResult');
+            const batchResult = document.getElementById('batchResult');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const newAnalysisBtn = document.getElementById('newAnalysisBtn');
+            const newBatchBtn = document.getElementById('newBatchBtn');
+            const backToSingleBtn = document.getElementById('backToSingleBtn');
+            const loading = document.getElementById('loading');
+
+            // Event Listeners
+            analyzeSingleBtn.addEventListener('click', analyzeSingleText);
+            analyzeBatchBtn.addEventListener('click', analyzeBatchTexts);
+            if (newAnalysisBtn) newAnalysisBtn.addEventListener('click', resetSingleForm);
+            if (newBatchBtn) newBatchBtn.addEventListener('click', resetBatchForm);
+            if (backToSingleBtn) {
+                backToSingleBtn.addEventListener('click', () => {
+                    const singleTab = new bootstrap.Tab(document.getElementById('single-tab'));
+                    singleTab.show();
+                    resetBatchForm();
+                });
+            }
+
+            // Functions
+            async function analyzeSingleText() {
+                const text = document.getElementById('singleText').value.trim();
+                if (!text) {
+                    showError('Please enter some text to analyze');
+                    return;
+                }
+
+                try {
+                    showLoading(true);
+                    const response = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ text: text })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to analyze text');
+                    }
+
+                    const result = await response.json();
+                    displaySingleResult(result);
+                    showError(false);
+                } catch (error) {
+                    showError(error.message || 'An error occurred while analyzing the text');
+                    console.error('Error:', error);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            async function analyzeBatchTexts() {
+                const texts = document.getElementById('batchTexts').value
+                    .split('\n')
+                    .map(t => t.trim())
+                    .filter(t => t);
+
+                if (texts.length === 0) {
+                    showError('Please enter at least one text to analyze');
+                    return;
+                }
+
+                try {
+                    showLoading(true);
+                    const response = await fetch('/api/analyze_batch', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ texts: texts })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to analyze texts');
+                    }
+
+                    const result = await response.json();
+                    displayBatchResults(result);
+                    showError(false);
+                } catch (error) {
+                    showError(error.message || 'An error occurred while analyzing the texts');
+                    console.error('Error:', error);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function displaySingleResult(result) {
+                const resultText = document.getElementById('resultText');
+                const sentimentResult = document.getElementById('sentimentResult');
+                
+                resultText.textContent = result.text || 'No text provided';
+                
+                const sentiment = result.sentiment || 'unknown';
+                const sentimentClass = getSentimentClass(sentiment);
+                
+                sentimentResult.textContent = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+                sentimentResult.className = `h4 mb-0 ${sentimentClass}`;
+                
+                singleResult.style.display = 'block';
+            }
+
+            function displayBatchResults(results) {
+                const resultsTableBody = document.getElementById('resultsTableBody');
+                const resultCount = document.getElementById('resultCount');
+                
+                // Clear previous results
+                resultsTableBody.innerHTML = '';
+                
+                // Update count
+                const count = results.predictions ? results.predictions.length : 0;
+                resultCount.textContent = `${count} ${count === 1 ? 'result' : 'results'}`;
+                
+                // Add results to table
+                if (results.predictions && results.predictions.length > 0) {
+                    results.predictions.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        const sentimentClass = getSentimentClass(item.sentiment);
+                        
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${item.text || 'No text'}</td>
+                            <td><span class="${sentimentClass}">${item.sentiment || 'unknown'}</span></td>
+                        `;
+                        resultsTableBody.appendChild(row);
+                    });
+                }
+                
+                batchResult.style.display = 'block';
+            }
+
+            function getSentimentClass(sentiment) {
+                if (!sentiment) return '';
+                
+                const lowerSentiment = sentiment.toLowerCase();
+                if (lowerSentiment.includes('positive')) return 'sentiment-positive';
+                if (lowerSentiment.includes('negative')) return 'sentiment-negative';
+                if (lowerSentiment.includes('neutral')) return 'sentiment-neutral';
+                return '';
+            }
+
+            function resetSingleForm() {
+                document.getElementById('singleText').value = '';
+                singleResult.style.display = 'none';
+            }
+
+            function resetBatchForm() {
+                document.getElementById('batchTexts').value = '';
+                batchResult.style.display = 'none';
+            }
+
+            function showError(message) {
+                if (!message) {
+                    errorMessage.style.display = 'none';
+                    return;
+                }
+                
+                errorText.textContent = message;
+                errorMessage.style.display = 'block';
+                
+                // Auto-hide error after 5 seconds
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            function showLoading(show) {
+                loading.style.display = show ? 'block' : 'none';
+            }
+        });
+    </script>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const analyzeSingleBtn = document.getElementById('analyzeSingleBtn');
+        const analyzeBatchBtn = document.getElementById('analyzeBatchBtn');
+        const singleResult = document.getElementById('singleResult');
+        const batchResult = document.getElementById('batchResult');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const newAnalysisBtn = document.getElementById('newAnalysisBtn');
+        const newBatchBtn = document.getElementById('newBatchBtn');
+        const backToSingleBtn = document.getElementById('backToSingleBtn');
+        const loading = document.getElementById('loading');
+
+        // Event Listeners
+        analyzeSingleBtn.addEventListener('click', analyzeSingleText);
+        analyzeBatchBtn.addEventListener('click', analyzeBatchTexts);
+        if (newAnalysisBtn) newAnalysisBtn.addEventListener('click', resetSingleForm);
+        if (newBatchBtn) newBatchBtn.addEventListener('click', resetBatchForm);
+        if (backToSingleBtn) {
+            backToSingleBtn.addEventListener('click', () => {
+                const singleTab = new bootstrap.Tab(document.getElementById('single-tab'));
+                singleTab.show();
+                resetBatchForm();
+            });
+        }
+
+        // API Base URL (change if deployed on Render or another server)
+        const API_BASE = "http://127.0.0.1:8000"; 
+
+        // Functions
+        async function analyzeSingleText() {
+            const text = document.getElementById('singleText').value.trim();
+            if (!text) {
+                showError('Please enter some text to analyze');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to analyze text');
+                }
+
+                const result = await response.json();
+                // result should be like { "text": "...", "sentiment": "positive" }
+                displaySingleResult(result);
+                showError(false);
+            } catch (error) {
+                showError(error.message || 'An error occurred while analyzing the text');
+                console.error('Error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function analyzeBatchTexts() {
+            const texts = document.getElementById('batchTexts').value
+                .split('\n')
+                .map(t => t.trim())
+                .filter(t => t);
+
+            if (texts.length === 0) {
+                showError('Please enter at least one text to analyze');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/predict_batch`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ texts: texts })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to analyze texts');
+                }
+
+                const result = await response.json();
+                // result should be like { "predictions": [ { "text": "...", "sentiment": "negative" }, ... ] }
+                displayBatchResults(result);
+                showError(false);
+            } catch (error) {
+                showError(error.message || 'An error occurred while analyzing the texts');
+                console.error('Error:', error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displaySingleResult(result) {
+            const resultText = document.getElementById('resultText');
+            const sentimentResult = document.getElementById('sentimentResult');
+            
+            resultText.textContent = result.text || 'No text provided';
+            
+            const sentiment = result.sentiment || 'unknown';
+            const sentimentClass = getSentimentClass(sentiment);
+            
+            sentimentResult.textContent = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+            sentimentResult.className = `h4 mb-0 ${sentimentClass}`;
+            
+            singleResult.style.display = 'block';
+
+            lastSingleResult = result;
+            document.getElementById('sendSingleAlertBtn').disabled = false;
+
+        }
+
+        function displayBatchResults(results) {
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            const resultCount = document.getElementById('resultCount');
+            
+            // Clear previous results
+            resultsTableBody.innerHTML = '';
+            
+            // Make sure we have a valid results object
+            if (!results) {
+                console.error('No results provided to displayBatchResults');
+                showAlertMessage('No results to display', true);
+                return;
+            }
+
+            // Handle both direct array and object with predictions property
+            const predictions = Array.isArray(results) ? results : 
+                             (results.predictions || []);
+            
+            // Update count
+            const count = predictions.length;
+            resultCount.textContent = `${count} ${count === 1 ? 'result' : 'results'}`;
+            
+            // Add results to table
+            if (count > 0) {
+                predictions.forEach((item, index) => {
+                    try {
+                        const row = document.createElement('tr');
+                        // Ensure we have a valid item
+                        if (!item) return;
+                        
+                        const text = item.text || item.Text || 'No text';
+                        const sentiment = item.sentiment || item.Sentiment || 'unknown';
+                        const score = item.score || item.Score || 0;
+                        const sentimentClass = getSentimentClass(sentiment);
+                        
+                        row.innerHTML = `
+                            <td>${index + 1}</td>
+                            <td>${text}</td>
+                            <td><span class="${sentimentClass}">${sentiment} ${score ? `(${score.toFixed(2)})` : ''}</span></td>
+                        `;
+                        resultsTableBody.appendChild(row);
+                    } catch (error) {
+                        console.error('Error processing result row:', error, item);
+                    }
+                });
+            } else {
+                // Add a row indicating no results
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3" class="text-center">No results to display</td>';
+                resultsTableBody.appendChild(row);
+            }
+            
+            batchResult.style.display = 'block';
+
+            // Store the results for potential alert sending
+            lastBatchResults = { predictions };
+            const sendBatchBtn = document.getElementById('sendBatchAlertBtn');
+            if (sendBatchBtn) {
+                sendBatchBtn.disabled = count === 0;
+            }
+        }
+
+        function getSentimentClass(sentiment) {
+            if (!sentiment) return '';
+            
+            const lowerSentiment = sentiment.toLowerCase();
+            if (lowerSentiment.includes('positive')) return 'sentiment-positive';
+            if (lowerSentiment.includes('negative')) return 'sentiment-negative';
+            if (lowerSentiment.includes('neutral')) return 'sentiment-neutral';
+            return '';
+        }
+
+        function resetSingleForm() {
+            document.getElementById('singleText').value = '';
+            singleResult.style.display = 'none';
+        }
+
+        function resetBatchForm() {
+            document.getElementById('batchTexts').value = '';
+            batchResult.style.display = 'none';
+        }
+
+        function showError(message) {
+            if (!message) {
+                errorMessage.style.display = 'none';
+                return;
+            }
+            
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+            
+            // Auto-hide error after 5 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+    });
+
+
+    // Global variables
+    const API_BASE = ''; // Empty string to use relative URLs (same origin)
+    
+    // AI Suggestions functionality
+    document.getElementById('ai-suggestions-btn').addEventListener('click', async function() {
+        const container = document.getElementById('aiSuggestionsContainer');
+        const content = document.getElementById('aiSuggestionsContent');
+        
+        try {
+            // Show loading state
+            content.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Generating AI suggestions...</p></div>';
+            container.style.display = 'block';
+            
+            // Get all complaint texts
+            let complaints = [];
+            const activeTab = document.querySelector('.tab-pane.active');
+            
+            if (activeTab.id === 'single') {
+                const text = document.getElementById('singleText').value.trim();
+                if (text) complaints = [text];
+            } else {
+                const batchText = document.getElementById('batchTexts').value.trim();
+                if (batchText) {
+                    complaints = batchText.split('\n').filter(t => t.trim());
+                }
+            }
+            
+            if (complaints.length === 0) {
+                throw new Error('No valid text found to analyze');
+            }
+            
+            // Call the API to get suggestions
+            const response = await fetch('/get_ai_suggestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ complaints: complaints })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.details || 'Failed to get suggestions');
+            }
+            
+            const data = await response.json();
+            content.innerHTML = data.html;
+            
+        } catch (error) {
+            console.error('Error getting AI suggestions:', error);
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Failed to load suggestions: ${error.message}
+                </div>
+            `;
+        }
+    });
+    let lastSingleResult = null;
+    let lastBatchResults = [];
+
+    // Show alert message function
+    function showAlertMessage(message, isError = false) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${isError ? 'alert-danger' : 'alert-success'} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${isError ? '❌' : '✅'} ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+
+    // Show loading indicator
+    function showLoading(show) {
+        const loading = document.getElementById('loading');
+        if (loading) {
+            loading.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    // Show a toast notification
+    function showToast(message, isError = false) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.position = 'fixed';
+            toastContainer.style.top = '20px';
+            toastContainer.style.right = '20px';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+            
+            // Add some styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .toast {
+                    padding: 12px 20px;
+                    margin-bottom: 10px;
+                    border-radius: 4px;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    min-width: 250px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    animation: slideIn 0.3s ease-out;
+                }
+                .toast-success { background-color: #28a745; }
+                .toast-error { background-color: #dc3545; }
+                .toast-close {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 1.2rem;
+                    cursor: pointer;
+                    margin-left: 15px;
+                }
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'toast-error' : 'toast-success'}`;
+        
+        // Add message
+        const messageEl = document.createElement('span');
+        messageEl.textContent = message;
+        toast.appendChild(messageEl);
+        
+        // Add close button
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'toast-close';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = () => toast.remove();
+        toast.appendChild(closeBtn);
+        
+        // Add to container
+        toastContainer.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    }
+
+    // Send Alert for Single Analysis
+    async function sendSingleAlert() {
+        if (!lastSingleResult) { 
+            showToast("❌ No analysis result to send", true);
+            return; 
+        }
+
+        showLoading(true);
+        try {
+            const response = await fetch('/send-alert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: lastSingleResult.text,
+                    sentiment: lastSingleResult.sentiment,
+                    score: lastSingleResult.score || 0.5,
+                    urgency: lastSingleResult.sentiment === 'negative' ? 'High' : 'Medium',
+                    recommendation: lastSingleResult.sentiment === 'negative' ? 'Immediate response recommended.' : 'Monitor sentiment.'
+                })
+            });
+            
+            if (response.ok) {
+                showToast("✅ Alert sent successfully!");
+                showAlertMessage("Alert sent successfully!");
+            } else {
+                const error = await response.json().catch(() => ({}));
+                const errorMsg = error.error || 'Failed to send alert';
+                showToast(`❌ ${errorMsg}`, true);
+                showAlertMessage(errorMsg, true);
+            }
+        } catch (err) {
+            console.error('Error sending alert:', err);
+            const errorMsg = "Failed to connect to the server. Please try again.";
+            showToast(`❌ ${errorMsg}`, true);
+            showAlertMessage(errorMsg, true);
+        } finally { 
+            showLoading(false); 
+        }
+    }
+
+    // Send Alerts for Batch Analysis
+    async function sendBatchAlert() {
+        const predictions = lastBatchResults.predictions || [];
+        if (!predictions.length) { 
+            showToast("❌ No batch results to send", true);
+            return; 
+        }
+
+        showLoading(true);
+        try {
+            let successCount = 0;
+            let failedCount = 0;
+            
+            for (const item of predictions) {
+                try {
+                    const response = await fetch('/send-alert', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: item.text,
+                            sentiment: item.sentiment,
+                            score: item.score || 0.5,
+                            urgency: item.sentiment === 'negative' ? 'High' : 'Medium',
+                            recommendation: item.sentiment === 'negative' ? 'Immediate response recommended.' : 'Monitor sentiment.'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        failedCount++;
+                    }
+                } catch (err) {
+                    console.error('Error sending batch alert:', err);
+                    failedCount++;
+                }
+            }
+            
+            // Show appropriate toast message based on results
+            if (failedCount === 0) {
+                const message = `✅ Successfully sent ${successCount} alert${successCount !== 1 ? 's' : ''}!`;
+                showToast(message);
+                showAlertMessage(message);
+            } else if (successCount === 0) {
+                const message = `❌ Failed to send ${failedCount} alert${failedCount !== 1 ? 's' : ''}. Please try again.`;
+                showToast(message, true);
+                showAlertMessage(message, true);
+            } else {
+                const message = `⚠️ Sent ${successCount} alert${successCount !== 1 ? 's' : ''}, failed to send ${failedCount}`;
+                showToast(message, true);
+                showAlertMessage(message, true);
+            }
+        } catch (err) {
+            console.error('Unexpected error in batch alert:', err);
+            const errorMsg = "An unexpected error occurred. Please try again.";
+            showToast(`❌ ${errorMsg}`, true);
+            showAlertMessage(errorMsg, true);
+        } finally { 
+            showLoading(false); 
+        }
+    }
+
+    // Function to show Gemini alert in the alert box
+    function showGeminiAlert(message, isError = false) {
+        const alertBox = document.getElementById('geminiAlertBox');
+        const alertContent = document.getElementById('geminiAlertContent');
+        const suggestionsContainer = document.getElementById('aiSuggestionsContainer');
+        
+        if (isError) {
+            alertContent.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+        } else {
+            alertContent.innerHTML = `<div class="alert alert-info">${message}</div>`;
+        }
+        
+        // Ensure Gemini Alert is always above AI Suggestions
+        if (suggestionsContainer.style.display === 'block') {
+            // Move the alert box before the suggestions container in the DOM
+            const parent = alertBox.parentNode;
+            const nextSibling = alertBox.nextSibling;
+            if (nextSibling !== suggestionsContainer) {
+                parent.insertBefore(alertBox, suggestionsContainer);
+            }
+            
+            // Add some spacing
+            suggestionsContainer.style.marginTop = '20px';
+            alertBox.style.marginBottom = '20px';
+        } else {
+            alertBox.style.marginBottom = '0';
+        }
+        
+        alertBox.style.display = 'block';
+        
+        // Scroll to the Gemini Alert Box
+        setTimeout(() => {
+            alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+    
+    // Add click event listener for Gemini Alert button
+    document.getElementById("gemini-alert-btn").addEventListener("click", async () => {
+        try {
+            // Get the active tab (single or batch)
+            const activeTab = document.querySelector('.tab-pane.active');
+            let texts = [];
+            let scores = [];
+
+            if (activeTab.id === 'single') {
+                // For single text analysis
+                const text = document.getElementById('singleText').value.trim();
+                if (!text) {
+                    showAlertMessage('Please enter some text first', true);
+                    return;
+                }
+                texts = [text];
+                // For single text, we don't have scores yet, so we'll use a neutral score
+                scores = [0.5];
+            } else {
+                // For batch analysis
+                const resultRows = document.querySelectorAll('#resultsTableBody tr');
+                if (resultRows.length === 0) {
+                    showAlertMessage('Please analyze some text first', true);
+                    return;
+                }
+                
+                resultRows.forEach(row => {
+                    const text = row.cells[1].textContent.trim();
+                    const sentiment = row.cells[2].textContent.trim().toLowerCase();
+                    // Convert sentiment to a score (simplified)
+                    const score = sentiment === 'positive' ? 0.9 : 
+                                 sentiment === 'negative' ? 0.1 : 0.5;
+                    
+                    texts.push(text);
+                    scores.push(score);
+                });
+            }
+
+            showLoading(true);
+            const response = await fetch("/api/alerts/gemini", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ texts, scores })
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || `HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            showGeminiAlert(data.alert);
+        } catch (error) {
+            console.error('Error generating Gemini alert:', error);
+            showGeminiAlert(`<div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Error:</strong> ${error.message}
+            </div>`, true);
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    // Add a styled alert box for Gemini alerts
+    const alertBox = document.createElement('div');
+    alertBox.className = 'alert alert-info gemini-alert-box';
+    alertBox.style.display = 'none';
+    alertBox.innerHTML = `
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <span class="gemini-alert-content"></span>
+    `;
+    document.body.appendChild(alertBox);
+
+
+
+    // Save single feedback to dashboard
+    async function saveToDashboard(text, sentiment) {
+        try {
+            const response = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: text,
+                    sentiment: sentiment
+                })
+            });
+            
+            if (response.ok) {
+                showAlert('Feedback saved to dashboard!', 'success');
+            } else {
+                throw new Error('Failed to save feedback');
+            }
+        } catch (error) {
+            console.error('Error saving to dashboard:', error);
+            showAlert('Failed to save to dashboard. Please try again.', 'danger');
+        }
+    }
+    
+    // Save batch feedback to dashboard
+    async function saveBatchToDashboard(predictions) {
+        try {
+            const response = await fetch('/api/feedback/batch', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    predictions: predictions
+                })
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                showAlert(`${data.message}`, 'success');
+            } else {
+                throw new Error(data.error || 'Failed to save batch feedback');
+            }
+        } catch (error) {
+            console.error('Error saving batch to dashboard:', error);
+            showAlert('Failed to save batch to dashboard. Please try again.', 'danger');
+        }
+    }
+
+</script>
+<style>
+    body {
+        padding: 2rem 0;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        line-height: 1.6;
+    }
+    .container {
+        max-width: 1000px;
+{{ ... }}
+
+    header h1 {
+        font-weight: 700;
+        color: #0d6efd;
+    }
+
+    header p {
+        color: #6c757d;
+        font-size: 1.25rem;
+    }
+
+    .card {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-tabs .nav-link {
+        border-radius: 0.5rem 0.5rem 0 0;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs .nav-link.active {
+        background-color: #0d6efd;
+        color: #fff !important;
+    }
+
+    textarea.form-control {
+        border-radius: 0.5rem;
+        padding: 1rem;
+        font-size: 1rem;
+        resize: vertical;
+    }
+
+    button.btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    button.btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .sentiment-positive {
+        color: #198754;
+        font-weight: bold;
+    }
+
+    .sentiment-negative {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .sentiment-neutral {
+        color: #6c757d;
+        font-weight: bold;
+    }
+
+    .result-card {
+        display: none;
+        margin-top: 1.5rem;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .error-message {
+        display: none;
+        margin-top: 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+    }
+
+    #loading {
+        display: none;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+
+    footer {
+        margin-top: 3rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    footer p {
+        margin: 0;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    /* Highlight buttons */
+    #sendSingleAlertBtn, #sendBatchAlertBtn {
+        background-color: #007BFF; /* Blue */
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        margin-top: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    #sendSingleAlertBtn:disabled,
+    #sendBatchAlertBtn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    #sendSingleAlertBtn:hover:not(:disabled),
+    #sendBatchAlertBtn:hover:not(:disabled) {
+        background-color: #0056b3;
+    }
+
+    .feedback-section {
+  margin-top: 50px;
+  text-align: center;
+}
+.feedback-input, .feedback-batch {
+  width: 50%;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ced4da;
+}
+.btn-submit {
+  margin-top: 10px;
+  padding: 10px 30px;
+  font-weight: 600;
+  border-radius: 50px;
+}
+
+body {
+  background: #f0f2f5;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-section {
+    margin-top: 80px;
+  min-height: 80vh; /* smaller than full screen */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  color: white;
+  padding: 40px 20px;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.2); /* subtle depth */
+  border-radius: 15px;
+}
+
+.hero-section h1 {
+  font-size: 42px; /* smaller but still bold */
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.3); /* subtle shadow for readability */
+}
+
+.hero-section p {
+  font-size: 18px; /* smaller paragraph */
+  margin: 15px 0 25px;
+  max-width: 600px;
+  line-height: 1.5;
+  color: #f8f9fa;
+}
+
+.btn-launch {
+  padding: 12px 32px; /* slightly smaller */
+  font-size: 18px;
+  background: #ffc107;
+  color: #212529;
+  border-radius: 40px; /* rounded pill */
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* subtle shadow */
+}
+
+.btn-launch:hover {
+  background: #e0a800;
+  color: #fff;
+  transform: scale(1.05); /* smooth hover */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  cursor: pointer;
+}
+
+
+</style>
+
+</body>
+</html>

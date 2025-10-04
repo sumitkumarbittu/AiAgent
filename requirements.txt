@@ -1,5 +1,34 @@
-flask==2.3.3
-flask-cors==4.0.0
+# Core Dependencies
+Flask==2.3.3
+Flask-Cors==4.0.0
+Werkzeug==2.3.7
+python-dotenv==1.0.0
+
+# AI & Machine Learning
+google-generativeai==0.3.2
+
+# Data Processing & Analysis
+pandas==2.1.1
+numpy==1.26.0
+
+# Dashboard & Visualization
+plotly==5.17.0
+dash==2.13.0
+dash-bootstrap-components==1.5.0
+
+# Web & API
 requests==2.31.0
+python-dateutil==2.8.2
+
+# Alerting & Notifications
 yagmail==0.15.293
 slack-sdk==3.21.3
+
+# Development & Testing
+pytest==7.4.2
+pytest-cov==4.1.0
+black==23.9.1
+flake8==6.1.0
+
+# Utilities
+python-json-logger==2.0.7

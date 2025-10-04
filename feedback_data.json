@@ -59,66 +59,6 @@
         "sentiment": "Positive",
         "source": "import",
         "timestamp": "2025-10-04T16:40:00.000Z"
-      },
-      {
-        "text": "This phone broke in two days.",
-        "sentiment": "Negative",
-        "source": "import",
-        "timestamp": "2025-10-04T16:41:00.000Z"
-      },
-      {
-        "text": "These headphones sound great.",
-        "sentiment": "Positive",
-        "source": "import",
-        "timestamp": "2025-10-04T16:42:00.000Z"
-      },
-      {
-        "text": "Worst laptop I’ve ever bought.",
-        "sentiment": "Negative",
-        "source": "import",
-        "timestamp": "2025-10-04T16:43:00.000Z"
-      },
-      {
-        "text": "The software is very stable.",
-        "sentiment": "Positive",
-        "source": "import",
-        "timestamp": "2025-10-04T16:44:00.000Z"
-      },
-      {
-        "text": "I hate this slow tablet.",
-        "sentiment": "Negative",
-        "source": "import",
-        "timestamp": "2025-10-04T16:45:00.000Z"
-      },
-      {
-        "text": "The red phone case looks stylish.",
-        "sentiment": "Positive",
-        "source": "import",
-        "timestamp": "2025-10-04T16:46:00.000Z"
-      },
-      {
-        "text": "My charger died after a week.",
-        "sentiment": "Negative",
-        "source": "import",
-        "timestamp": "2025-10-04T16:47:00.000Z"
-      },
-      {
-        "text": "The camera is fantastic.",
-        "sentiment": "Positive",
-        "source": "import",
-        "timestamp": "2025-10-04T16:48:00.000Z"
-      },
-      {
-        "text": "The software crashes constantly.",
-        "sentiment": "Negative",
-        "source": "import",
-        "timestamp": "2025-10-04T16:49:00.000Z"
-      },
-      {
-        "text": "The camera is awful.",
-        "sentiment": "Negative",
-        "source": "import",
-        "timestamp": "2025-10-04T16:50:00.000Z"
       }
     ]
   }
